@@ -1,0 +1,48 @@
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+//import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
+
+public class EmployeeInfo {
+
+public static void main(String[] args) throws Exception {
+
+    try {
+
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/employee_database", "root","");
+        con.setAutoCommit(false);
+        PreparedStatement pstm = null;
+        FileInputStream input = new FileInputStream("C:\\Users\\Desktop\\Employee_Information.xlsx");
+        POIFSFileSystem fs = new POIFSFileSystem(input);
+        Workbook workbook;
+        workbook = WorkbookFactory.create(fs);
+        Sheet sheet = workbook.getSheetAt(0);
+        Row row;
+        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            row = (Row) sheet.getRow(i);
+            int  no = (int) row.getCell(2).getNumericCellValue();
+            String name = row.getCell(0).getStringCellValue();
+            String dob = row.getCell(1).getStringCellValue();
+            String designation = row.getCell(1).getStringCellValue();
+            int mnsalary = (int) row.getCell(1).getNumericCellValue();
+            int ansalary = (int) row.getCell(1).getNumericCellValue();
+            String sql = "INSERT INTO employee_information (Employee_No, Employee_Name, Date_Of_Birth, Designation, Monthly_Salary, Annual_Salary) VALUES('" + no + "','" + name + "'," + dob + ", '" + designation + "'," + mnsalary + ",'" + ansalary + "')";
+            pstm = (PreparedStatement) con.prepareStatement(sql);
+            pstm.execute();
+            System.out.println("Import rows " + i);
+        }
+        con.commit();
+        pstm.close();
+        con.close();
+        input.close();
+        System.out.println("Success, import excel to mysql table");
+     } catch (IOException e) {
+     }
+   }
+}
